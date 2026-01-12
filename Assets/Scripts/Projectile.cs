@@ -13,15 +13,22 @@ public class Projectile : MonoBehaviour
     {
         target = _target;
     }
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    
     void Start()
     {
         
     }
 
-    // Update is called once per frame
     void Update()
     {
         
     }
+    // Add more projectile behavior here (e.g., movement, collision detection)
+
+    public void SetData(TowerData towerData)
+    {
+        data = towerData;
+    }
+
+    
 }
