@@ -5,9 +5,12 @@ public class TowerData : ScriptableObject
 {
     [Header("Identity")]
     public string towerName;
+    
     public GameObject modelPrefab; // The prefab that has Tower.cs and TowerShooting.cs
 
     [Header("Stats")]
+
+    public TargetPriority priority; // Targeting priority of the tower
     public float range = 5.0f; //define the range of the tower
     public float fireRate = 1.0f; // Shots per second
     public int damage = 1; // Damage per shot => Do I need a damage?

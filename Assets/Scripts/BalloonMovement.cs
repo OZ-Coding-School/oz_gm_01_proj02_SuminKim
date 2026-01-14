@@ -1,36 +1,32 @@
 using UnityEngine;
+using UnityEngine.Splines;
 
 public class BalloonMovement : MonoBehaviour
 {
-    private Transform[] waypoints; // Path waypoints
-    private int currentWaypointIndex = 0;
-    [HideInInspector] public float moveSpeed = 2f;  
+    [HideInInspector] public float moveSpeed;
+    private SplineContainer spline;
+    private float progress = 0f;
 
-    public void SetupPath(Transform[] path, int startIndex = 0)
+    public void SetupPath(SplineContainer path, float startProgress = 0f)
     {
-        waypoints = path;
-        currentWaypointIndex = startIndex;
+        spline = path;
+        progress = startProgress;
     }
 
     void Update()
     {
-        if (waypoints == null || currentWaypointIndex >= waypoints.Length) return;
+        if (spline == null) return;
 
-        // Move toward current waypoint
-        transform.position = Vector3.MoveTowards(transform.position, waypoints[currentWaypointIndex].position, moveSpeed * Time.deltaTime);
+        float splineLength = spline.CalculateLength();
+        progress += (moveSpeed * Time.deltaTime) / splineLength;
 
-        // Check if reached
-        if (Vector3.Distance(transform.position, waypoints[currentWaypointIndex].position) < 0.1f)
+        transform.position = spline.EvaluatePosition(progress);
+
+        if (progress >= 1f)
         {
-            currentWaypointIndex++;
-            
-            // If it was the last waypoint
-            if (currentWaypointIndex >= waypoints.Length)
-            {
-                GetComponent<Balloon>().ReachEnd();
-            }
+            GetComponent<Balloon>().ReachEnd();
         }
     }
 
-    public int GetCurrentWaypointIndex() => currentWaypointIndex;
+    public float GetProgress() => progress;
 }

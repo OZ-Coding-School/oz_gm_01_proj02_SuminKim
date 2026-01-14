@@ -3,23 +3,36 @@ using UnityEngine;
 public class Balloon : MonoBehaviour
 {
     public BalloonData data;
-    
+
     [Header("Effects")]
     public GameObject popEffectPrefab;
     public AudioClip popSound;
 
     private BalloonMovement movement;
+    private int currentHealth;
 
     void Start()
     {
-        // Get movement component and set speed
         movement = GetComponent<BalloonMovement>();
-        if (data != null) movement.moveSpeed = data.speed;
+        currentHealth = data.health;
+
+        movement.moveSpeed = data.speed;
+
+        EnemyManager.Instance.RegisterEnemy(this);
     }
 
-    public void Pop()
+    public void TakeDamage(int amount)
     {
-        // 1. Visual & Sound
+        currentHealth -= amount;
+        if (currentHealth <= 0)
+        {
+            Pop();
+        }
+    }
+
+    void Pop()
+    {
+        // Effects
         if (popEffectPrefab != null)
         {
             GameObject fx = Instantiate(popEffectPrefab, transform.position, Quaternion.identity);
@@ -27,47 +40,47 @@ public class Balloon : MonoBehaviour
             main.startColor = data.bloonColor;
             Destroy(fx, 1f);
         }
-        if (popSound != null) AudioSource.PlayClipAtPoint(popSound, transform.position);
 
-        // 2. Rewards
+        if (popSound != null)
+            AudioSource.PlayClipAtPoint(popSound, transform.position);
+
+        // Reward
         GameManager.Instance.AddMoney(data.moneyReward);
 
-        // 3. Spawn Child
+        // Spawn child
         if (data.childBalloon != null)
         {
             SpawnChild();
         }
 
+        EnemyManager.Instance.UnregisterEnemy(this);
         Destroy(gameObject);
     }
 
     void SpawnChild()
     {
-        // Use the prefab defined in the child data
-        GameObject childObj = Instantiate(data.childBalloon.modelPrefab, transform.position, transform.rotation);
-        
+        GameObject childObj = Instantiate(
+            data.childBalloon.modelPrefab,
+            transform.position,
+            transform.rotation
+        );
+
         Balloon childBalloon = childObj.GetComponent<Balloon>();
-        childBalloon.data = data.childBalloon; // Assign the data
+        childBalloon.data = data.childBalloon;
 
         BalloonMovement childMove = childObj.GetComponent<BalloonMovement>();
-        // Transfer path and current index
-        childMove.SetupPath(FindObjectOfType<WaveSpawner>().pathWaypoints, movement.GetCurrentWaypointIndex());
+        BalloonMovement parentMove = GetComponent<BalloonMovement>();
+
+        childMove.SetupPath(
+            parentMove.GetSpline(),
+            parentMove.GetProgress()
+        );
     }
 
     public void ReachEnd()
     {
-        // Player takes damage
         GameManager.Instance.TakeDamage(data.damageToPlayer);
+        EnemyManager.Instance.UnregisterEnemy(this);
         Destroy(gameObject);
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        // Check for projectile collision
-        if (other.CompareTag("Projectile"))
-        {
-            Pop();
-            Destroy(other.gameObject);
-        }
     }
 }

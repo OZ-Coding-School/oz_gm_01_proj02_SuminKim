@@ -18,33 +18,13 @@ public class Tower : MonoBehaviour
     }
 
     void UpdateTarget()
-    {
-        // Find the nearest enemy within range
-        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
-        float shortestDistance = Mathf.Infinity;
-        GameObject nearestEnemy = null;
+{
+    target = null;
 
-        // Loop through all enemies to find the nearest one
-        foreach (GameObject enemy in enemies)
-        {
-            float distanceToEnemy = Vector3.Distance(transform.position, enemy.transform.position);
-            if (distanceToEnemy < shortestDistance)     //If this enemy is closer than the previously recorded closest
-            {
-                shortestDistance = distanceToEnemy;  //Update shortest distance
-                nearestEnemy = enemy;
-            }
-        }
-
-        // If the nearest enemy is within range, set it as the target
-        if (nearestEnemy != null && shortestDistance <= data.range)
-        {
-            target = nearestEnemy.transform;
-        }
-        else
-        {
-            target = null;
-        }
-    }
+    Balloon enemy = EnemyManager.Instance.GetNearestEnemy(transform.position, data.range);
+    if (enemy != null)
+        target = enemy.transform;
+}
 
     void Update()
     {   // If there is no target, do nothing
@@ -80,8 +60,12 @@ public class Tower : MonoBehaviour
         if (projScript != null)
         {
             // Set projectile speed and target
-            projScript.speed = data.projectileSpeed;  // Set speed from TowerData
-            projScript.Seek(target); // Set the target for the projectile
+            Projectile projScript = projObj.GetComponent<Projectile>();
+            if (projScript != null)
+            {
+                projScript.SetData(data);
+                projScript.Seek(target);
+            }   
         }
     }
 
