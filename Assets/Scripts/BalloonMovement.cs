@@ -1,32 +1,62 @@
 using UnityEngine;
-using UnityEngine.Splines;
 
 public class BalloonMovement : MonoBehaviour
 {
-    [HideInInspector] public float moveSpeed;
-    private SplineContainer spline;
-    private float progress = 0f;
+    private Transform[] waypoints;          // Waypoints that define the path
+    private int currentWaypointIndex = 0;   // Which waypoint we are moving toward
 
-    public void SetupPath(SplineContainer path, float startProgress = 0f)
+    [HideInInspector]
+    public float moveSpeed = 2f;             // Set by Balloon.cs from BalloonData
+
+    // Called by WaveSpawner when the balloon is created
+    public void SetupPath(Transform[] path, int startIndex = 0)
     {
-        spline = path;
-        progress = startProgress;
+        waypoints = path;
+        currentWaypointIndex = startIndex;
     }
 
     void Update()
     {
-        if (spline == null) return;
+        // Safety check
+        if (waypoints == null || currentWaypointIndex >= waypoints.Length)
+            return;
 
-        float splineLength = spline.CalculateLength();
-        progress += (moveSpeed * Time.deltaTime) / splineLength;
+        // Move toward the current waypoint
+        transform.position = Vector3.MoveTowards(
+            transform.position,
+            waypoints[currentWaypointIndex].position,
+            moveSpeed * Time.deltaTime
+        );
 
-        transform.position = spline.EvaluatePosition(progress);
-
-        if (progress >= 1f)
+        // Check if the waypoint has been reached
+        if (Vector3.Distance(transform.position, waypoints[currentWaypointIndex].position) < 0.1f)
         {
-            GetComponent<Balloon>().ReachEnd();
+            currentWaypointIndex++;
+
+            // If this was the last waypoint, notify the Balloon
+            if (currentWaypointIndex >= waypoints.Length)
+            {
+                GetComponent<Balloon>().ReachEnd();
+            }
         }
     }
 
-    public float GetProgress() => progress;
+    // Used when spawning child balloons
+    public int GetCurrentWaypointIndex()
+    {
+        return currentWaypointIndex;
+    }
+
+    public Transform[] GetWaypoints()
+    {
+        return waypoints;
+    }
+
+    public float GetProgress()
+    {
+        if (waypoints == null || waypoints.Length == 0)
+            return 0f;
+            
+        return (float)currentWaypointIndex / (waypoints.Length - 1);
+    }
 }

@@ -59,9 +59,6 @@ public class Tower : MonoBehaviour
         Projectile projScript = projObj.GetComponent<Projectile>(); //The reasony why I made Projectile.cs
         if (projScript != null)
         {
-            // Set projectile speed and target
-            Projectile projScript = projObj.GetComponent<Projectile>();
-            if (projScript != null)
             {
                 projScript.SetData(data);
                 projScript.Seek(target);

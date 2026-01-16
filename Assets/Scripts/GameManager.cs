@@ -5,26 +5,48 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
 
     [Header("Player Status")]
-    public int money = 200; // Starting money
-    public int lives = 100; // Starting lives
+    public int money = 200;
+    public int lives = 100;
+
+    private WaveSpawner waveSpawner;
+    private bool waveInProgress = false;
 
     void Awake()
     {
-        // Singleton pattern
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+
+        waveSpawner = FindObjectOfType<WaveSpawner>();
+    }
+
+    // To start a wave
+    public void StartWave()
+    {
+        if (waveInProgress)
+            return;
+
+        waveInProgress = true;
+        waveSpawner.StartWave();
+    }
+
+    // To end a wave
+    public void EndWave()
+    {
+        waveInProgress = false;
+        waveSpawner.StopWave();
     }
 
     public void AddMoney(int amount)
     {
-        money += amount; // Increase money => Connect to UI later
-        Debug.Log($"Money: {money}"); 
+        money += amount;
+        Debug.Log($"Money: {money}");
     }
 
     public void TakeDamage(int damage)
     {
-        lives -= damage; // Decrase lives => Connect to UI later
+        lives -= damage;
         Debug.Log($"Lives: {lives}");
-        if (lives <= 0) Debug.Log("Game Over!");
+        if (lives <= 0)
+            Debug.Log("Game Over!");
     }
 }

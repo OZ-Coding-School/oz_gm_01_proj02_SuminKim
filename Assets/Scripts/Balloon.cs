@@ -11,12 +11,24 @@ public class Balloon : MonoBehaviour
     private BalloonMovement movement;
     private int currentHealth;
 
-    void Start()
+    void Awake()
     {
+        // just get the BalloonMovement component
         movement = GetComponent<BalloonMovement>();
-        currentHealth = data.health;
+    }
 
+    // Called by WaveSpawner when the balloon is created
+    public void Initialize(BalloonData balloonData)
+    {
+        data = balloonData;
+
+        currentHealth = data.health;
         movement.moveSpeed = data.speed;
+
+        // 효과도 Data 기준으로 세팅하고 싶다면
+        // (Prefab에 넣고 싶으면 이 줄은 빼도 됨)
+        // popEffectPrefab = data.popEffectPrefab;
+        // popSound = data.popSound;
 
         EnemyManager.Instance.RegisterEnemy(this);
     }
@@ -66,14 +78,14 @@ public class Balloon : MonoBehaviour
         );
 
         Balloon childBalloon = childObj.GetComponent<Balloon>();
-        childBalloon.data = data.childBalloon;
+        childBalloon.Initialize(data.childBalloon); // 🔥 여기 중요
 
         BalloonMovement childMove = childObj.GetComponent<BalloonMovement>();
         BalloonMovement parentMove = GetComponent<BalloonMovement>();
 
         childMove.SetupPath(
-            parentMove.GetSpline(),
-            parentMove.GetProgress()
+            parentMove.GetWaypoints(),
+            parentMove.GetCurrentWaypointIndex()
         );
     }
 
