@@ -4,6 +4,10 @@ public class Tower : MonoBehaviour
 {
     public TowerData data;
 
+    [Header("Runtime Stats (DO NOT EDIT)")]
+    public TowerRuntimeStats runtimeStats = new TowerRuntimeStats();
+
+
     [Header("References")]
     public Transform partToRotate; // The part of the tower that rotates to face the target
     public Transform firePoint; // The point from which projectiles are fired
